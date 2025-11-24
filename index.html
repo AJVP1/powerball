@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Powerball Drawings TODO List</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app">
+      <h1>Powerball Drawings</h1>
+      <p class="subtitle">
+        Use this list to plan and track your Powerball drawings. The drawing
+        logic itself goes in JavaScript where indicated.
+      </p>
+
+      <div class="layout">
+        <!-- LEFT: FORM -->
+        <section class="card" aria-label="Create or edit drawing">
+          <h2 id="form-title">New drawing</h2>
+          <form id="drawing-form">
+            <div class="field">
+              <label for="title">Drawing label / name</label>
+              <input
+                type="text"
+                id="title"
+                name="title"
+                placeholder="Example: Wednesday drawing #1"
+                required
+              />
+            </div>
+
+            <div class="field">
+              <label for="date">Drawing date</label>
+              <input type="date" id="date" name="date" required />
+            </div>
+
+            <div class="field">
+              <label for="numbers">Numbers (generated or manual)</label>
+              <div class="inline">
+                <input
+                  type="text"
+                  id="numbers"
+                  name="numbers"
+                  placeholder="e.g. 05 12 27 48 52 + 16"
+                />
+                <button
+                  type="button"
+                  class="btn btn-secondary btn-sm"
+                  id="btn-generate"
+                >
+                  Generate
+                </button>
+              </div>
+            </div>
+
+            <div class="field">
+              <label for="notes">Notes</label>
+              <textarea
+                id="notes"
+                name="notes"
+                placeholder="Strategy, odds, or any notes about this drawing..."
+              ></textarea>
+            </div>
+
+            <div class="form-actions">
+              <div>
+                <button type="submit" class="btn btn-primary" id="btn-submit">
+                  Save drawing
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-secondary"
+                  id="btn-cancel-edit"
+                  style="display: none"
+                >
+                  Cancel edit
+                </button>
+              </div>
+              <p class="status-text">
+                Mode: <span id="mode-label">Create</span>
+              </p>
+            </div>
+          </form>
+        </section>
+
+        <!-- RIGHT: LIST -->
+        <section class="card" aria-label="Saved drawings">
+          <div class="list-header">
+            <h2>Saved drawings</h2>
+            <div class="filters" aria-label="Filter drawings">
+              <button class="chip chip-active" data-filter="all">All</button>
+              <button class="chip" data-filter="pending">Pending</button>
+              <button class="chip" data-filter="completed">Completed</button>
+            </div>
+          </div>
+          <div class="list" id="drawing-list"></div>
+          <div class="list-empty" id="empty-state" style="display: none">
+            No drawings yet. Add your first one on the left.
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <script>
+      // ================================
+      // DATA MODEL + STORAGE
+      // ================================
+
+      /**
+       * Drawing structure example:
+       * {
+       *   id: 'uuid-string',
+       *   title: 'Wednesday drawing',
+       *   date: '2025-11-24',
+       *   numbers: '05 12 27 48 52 + 16',
+       *   notes: 'anything...',
+       *   completed: false
+       * }
+       */
+
+      const STORAGE_KEY = "powerball-drawings-todo";
+
+      let draws = [];
+      let editingId = null;
+      let currentFilter = "all";
+
+      const form = document.getElementById("drawing-form");
+      const titleInput = document.getElementById("title");
+      const dateInput = document.getElementById("date");
+      const numbersInput = document.getElementById("numbers");
+      const notesInput = document.getElementById("notes");
+
+      const submitBtn = document.getElementById("btn-submit");
+      const cancelEditBtn = document.getElementById("btn-cancel-edit");
+      const formTitle = document.getElementById("form-title");
+      const modeLabel = document.getElementById("mode-label");
+
+      const drawingList = document.getElementById("drawing-list");
+      const emptyState = document.getElementById("empty-state");
+
+      const chipButtons = document.querySelectorAll(".chip");
+      const generateBtn = document.getElementById("btn-generate");
+
+      // Load from localStorage on start
+      init();
+
+      function init() {
+        try {
+          const saved = localStorage.getItem(STORAGE_KEY);
+          if (saved) {
+            draws = JSON.parse(saved);
+          }
+        } catch (err) {
+          console.error("Failed to parse saved drawings", err);
+          draws = [];
+        }
+        renderList();
+      }
+
+      function saveToStorage() {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(draws));
+      }
+
+      // ================================
+      // FORM HANDLING
+      // ================================
+
+      form.addEventListener("submit", (event) => {
+        event.preventDefault();
+
+        const title = titleInput.value.trim();
+        const date = dateInput.value;
+        const numbers = numbersInput.value.trim();
+        const notes = notesInput.value.trim();
+
+        if (editingId) {
+          updateDrawing(editingId, { title, date, numbers, notes });
+        } else {
+          createDrawing({ title, date, numbers, notes });
+        }
+
+        clearForm();
+        renderList();
+        saveToStorage();
+      });
+
+      cancelEditBtn.addEventListener("click", () => {
+        clearForm();
+      });
+
+      function createDrawing({ title, date, numbers, notes }) {
+        const newDraw = {
+          id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
+          title,
+          date,
+          numbers,
+          notes,
+          completed: false,
+        };
+        draws.unshift(newDraw); // newest first
+      }
+
+      function updateDrawing(id, { title, date, numbers, notes }) {
+        const index = draws.findIndex((d) => d.id === id);
+        if (index === -1) return;
+        draws[index] = {
+          ...draws[index],
+          title,
+          date,
+          numbers,
+          notes,
+        };
+      }
+
+      function clearForm() {
+        form.reset();
+        editingId = null;
+        submitBtn.textContent = "Save drawing";
+        cancelEditBtn.style.display = "none";
+        formTitle.textContent = "New drawing";
+        modeLabel.textContent = "Create";
+      }
+
+      function fillFormForEdit(draw) {
+        titleInput.value = draw.title;
+        dateInput.value = draw.date;
+        numbersInput.value = draw.numbers || "";
+        notesInput.value = draw.notes || "";
+        editingId = draw.id;
+        submitBtn.textContent = "Update drawing";
+        cancelEditBtn.style.display = "inline-flex";
+        formTitle.textContent = "Edit drawing";
+        modeLabel.textContent = "Edit";
+      }
+
+      // ================================
+      // LIST RENDERING + CRUD ACTIONS
+      // ================================
+
+      function renderList() {
+        drawingList.innerHTML = "";
+
+        const filtered = draws.filter((d) => {
+          if (currentFilter === "pending") return !d.completed;
+          if (currentFilter === "completed") return d.completed;
+          return true; // all
+        });
+
+        if (filtered.length === 0) {
+          emptyState.style.display = "block";
+          return;
+        } else {
+          emptyState.style.display = "none";
+        }
+
+        filtered.forEach((draw) => {
+          const item = document.createElement("article");
+          item.className = "item";
+
+          // Left: checkbox + main info
+          const left = document.createElement("div");
+          left.className = "item-left";
+
+          const checkbox = document.createElement("input");
+          checkbox.type = "checkbox";
+          checkbox.checked = draw.completed;
+          checkbox.addEventListener("change", () => {
+            toggleCompleted(draw.id, checkbox.checked);
+          });
+
+          const main = document.createElement("div");
+          main.className = "item-main";
+
+          const titleEl = document.createElement("div");
+          titleEl.className = "item-title";
+          if (draw.completed) {
+            titleEl.classList.add("done");
+          }
+          titleEl.textContent = draw.title;
+
+          const meta = document.createElement("div");
+          meta.className = "item-meta";
+
+          const dateSpan = document.createElement("span");
+          dateSpan.textContent = draw.date || "No date";
+
+          const statusSpan = document.createElement("span");
+          statusSpan.textContent = draw.completed ? "Completed" : "Pending";
+
+          meta.appendChild(dateSpan);
+          meta.appendChild(statusSpan);
+
+          const notesEl = document.createElement("div");
+          notesEl.className = "item-notes";
+          const numbersText = draw.numbers
+            ? `Numbers: ${draw.numbers}`
+            : "Numbers: (none yet)";
+          const notesText = draw.notes ? ` – ${draw.notes}` : "";
+          notesEl.textContent = numbersText + notesText;
+
+          main.appendChild(titleEl);
+          main.appendChild(meta);
+          main.appendChild(notesEl);
+
+          left.appendChild(checkbox);
+          left.appendChild(main);
+
+          // Right: actions
+          const actions = document.createElement("div");
+          actions.className = "item-actions";
+
+          const editBtn = document.createElement("button");
+          editBtn.className = "btn btn-secondary btn-sm";
+          editBtn.textContent = "Edit";
+          editBtn.addEventListener("click", () => fillFormForEdit(draw));
+
+          const deleteBtn = document.createElement("button");
+          deleteBtn.className = "btn btn-danger btn-sm";
+          deleteBtn.textContent = "Delete";
+          deleteBtn.addEventListener("click", () => {
+            deleteDrawing(draw.id);
+          });
+
+          actions.appendChild(editBtn);
+          actions.appendChild(deleteBtn);
+
+          item.appendChild(left);
+          item.appendChild(actions);
+
+          drawingList.appendChild(item);
+        });
+      }
+
+      function toggleCompleted(id, checked) {
+        const index = draws.findIndex((d) => d.id === id);
+        if (index === -1) return;
+        draws[index].completed = checked;
+        saveToStorage();
+        renderList();
+      }
+
+      function deleteDrawing(id) {
+        const index = draws.findIndex((d) => d.id === id);
+        if (index === -1) return;
+        draws.splice(index, 1);
+        // If you were editing this one, reset form
+        if (editingId === id) {
+          clearForm();
+        }
+        saveToStorage();
+        renderList();
+      }
+
+      // ================================
+      // FILTERS
+      // ================================
+
+      chipButtons.forEach((chip) => {
+        chip.addEventListener("click", () => {
+          const filter = chip.getAttribute("data-filter");
+          currentFilter = filter;
+
+          chipButtons.forEach((c) => c.classList.remove("chip-active"));
+          chip.classList.add("chip-active");
+
+          renderList();
+        });
+      });
+
+      // ================================
+      // POWERBALL DRAWING LOGIC (YOU IMPLEMENT THIS PART)
+      // ================================
+
+      /**
+       * This function is called when the user clicks "Generate".
+       * You can replace its internal logic with your own algorithm
+       * for generating Powerball numbers.
+       *
+       * It must return a STRING, because the UI expects a string to
+       * be placed in the "numbers" input.
+       *
+       * Example Powerball format (US): 5 white balls 1–69 and
+       * 1 red ball 1–26. Adapt as you like.
+       */
+      function generatePowerballNumbers() {
+        // TODO: Replace this stub with your real drawing logic.
+        // Below is just a SIMPLE example of random numbers,
+        // so you can see how to wire it to the UI.
+
+        const whiteCount = 5;
+        const whiteMax = 69;
+        const redMax = 26;
+
+        const whiteBalls = new Set();
+        while (whiteBalls.size < whiteCount) {
+          const n = Math.floor(Math.random() * whiteMax) + 1;
+          whiteBalls.add(n);
+        }
+
+        const whiteArr = Array.from(whiteBalls).sort((a, b) => a - b);
+        const red = Math.floor(Math.random() * redMax) + 1;
+
+        const fmt = (n) => String(n).padStart(2, "0");
+        return whiteArr.map(fmt).join(" ") + " + " + fmt(red);
+      }
+
+      generateBtn.addEventListener("click", () => {
+        const result = generatePowerballNumbers();
+        if (typeof result === "string") {
+          numbersInput.value = result;
+        } else {
+          console.warn(
+            "generatePowerballNumbers() should return a string. Got:",
+            result
+          );
+        }
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,300 @@
+/* GLOBAL -------------------------------------------------- */
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: "Inter", system-ui, sans-serif;
+}
+
+body {
+  background: linear-gradient(135deg, #f5f9ff, #edf6ff, #f9f9ff);
+  color: #273044;
+  padding: 2rem 1rem;
+  display: flex;
+  justify-content: center;
+  min-height: 100vh;
+  font-size: 18px;
+  background-attachment: fixed;
+}
+
+/* MAIN APP ------------------------------------------------ */
+
+.app {
+  width: 100%;
+  max-width: 1050px;
+  backdrop-filter: blur(12px);
+  background: rgba(255, 255, 255, 0.65);
+  padding: 2.2rem;
+  border-radius: 20px;
+  border: 1px solid rgba(140, 160, 200, 0.25);
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.08);
+}
+
+/* TITLES -------------------------------------------------- */
+
+h1 {
+  font-size: 36px;
+  font-weight: 700;
+  margin-bottom: 0.3rem;
+  background: linear-gradient(90deg, #2e58ff, #35a4ff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.subtitle {
+  font-size: 18px;
+  margin-bottom: 1.6rem;
+  color: #4b5569;
+}
+
+/* LAYOUT -------------------------------------------------- */
+
+.layout {
+  display: grid;
+  grid-template-columns: 1fr 1.4fr;
+  gap: 2rem;
+}
+
+.card {
+  background: linear-gradient(90deg, #3f2b96 0%, #a8c0ff 100%);
+  background-blend-mode: soft-light, normal;
+  border-radius: 18px;
+  padding: 1.5rem 1.7rem;
+  border: 1px solid rgba(150, 170, 210, 0.25);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+  backdrop-filter: blur(8px);
+}
+
+.card h2 {
+  font-size: 24px;
+  font-weight: 600;
+  color: #edf0fa;
+  margin-bottom: 1rem;
+}
+
+/* FORM ---------------------------------------------------- */
+
+.field {
+  margin-bottom: 1.1rem;
+}
+
+.field label {
+  display: block;
+  margin-bottom: 0.4rem;
+  font-size: 17px;
+  font-weight: 500;
+  color: #f5f9ff;
+}
+
+.field input,
+.field textarea {
+  width: 100%;
+  padding: 0.75rem 0.8rem;
+  font-size: 18px;
+  border-radius: 12px;
+  border: 1px solid #d4d9e6;
+  background: #fdfdff;
+  color: #273044;
+  transition: 0.25s;
+}
+
+.field input:focus,
+.field textarea:focus {
+  outline: none;
+  border-color: #4d9aff;
+  box-shadow: 0 0 0 3px rgba(77, 154, 255, 0.25);
+}
+
+.inline {
+  display: flex;
+  gap: 0.7rem;
+  align-items: center;
+}
+
+/* BUTTONS ------------------------------------------------- */
+
+.btn {
+  border: none;
+  padding: 0.7rem 1.3rem;
+  font-size: 17px;
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: 12px;
+  transition: 0.18s;
+  white-space: nowrap;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #2e58ff, #45a2ff);
+  color: white;
+  box-shadow: 0 4px 14px rgba(60, 120, 255, 0.35);
+}
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(60, 120, 255, 0.45);
+}
+
+.btn-secondary {
+  background: #edf2ff;
+  color: #345;
+  border: 1px solid #cfd8ff;
+}
+.btn-secondary:hover {
+  background: #e2e8ff;
+}
+
+.btn-danger {
+  background: #ffe4e4;
+  color: #a22323;
+  border: 1px solid #ffc4c4;
+}
+.btn-danger:hover {
+  background: #ffdad9;
+}
+
+.btn-sm {
+  padding: 0.55rem 1rem;
+  font-size: 16px;
+}
+
+/* FORM FOOTER -------------------------------------------- */
+
+.form-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 0.9rem;
+}
+
+.status-text {
+  font-size: 16px;
+  color: #f9f9f9;
+}
+.status-text span {
+  font-weight: 700;
+  color: #3f2b96;
+}
+
+/* FILTER CHIPS ------------------------------------------- */
+
+.filters {
+  display: flex;
+  gap: 0.6rem;
+}
+
+.chip {
+  padding: 0.4rem 1rem;
+  font-size: 15px;
+  border-radius: 999px;
+  border: 1px solid #cfd8ff;
+  cursor: pointer;
+  background: #f4f7ff;
+  color: #3b4259;
+  transition: 0.2s;
+}
+
+.chip:hover {
+  background: #eaf1ff;
+}
+
+.chip-active {
+  background: linear-gradient(135deg, #2e58ff, #45a2ff);
+  color: white;
+  border-color: transparent;
+  box-shadow: 0 3px 10px rgba(60, 120, 255, 0.3);
+}
+
+/* LIST ---------------------------------------------------- */
+
+.list {
+  margin-top: 1rem;
+  max-height: 480px;
+  overflow-y: auto;
+  padding-right: 0.3rem;
+}
+
+/* SCROLLBAR (soft aesthetic) */
+.list::-webkit-scrollbar {
+  width: 8px;
+}
+.list::-webkit-scrollbar-thumb {
+  background: #d6dff7;
+  border-radius: 20px;
+}
+.list::-webkit-scrollbar-thumb:hover {
+  background: #c3cff3;
+}
+
+.list-empty {
+  color: #edf6ff;
+  margin-top: 1.2rem;
+  font-size: 18px;
+  text-align: center;
+}
+
+/* LIST ITEMS ---------------------------------------------- */
+
+.item {
+  background: rgba(255, 255, 255, 0.65);
+  border: 1px solid #d8ddee;
+  border-radius: 14px;
+  padding: 1rem 1.2rem;
+  margin-bottom: 1rem;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 1rem;
+  align-items: center;
+  transition: 0.2s;
+  backdrop-filter: blur(6px);
+}
+
+.item input[type="checkbox"] {
+  width: 22px;
+  height: 22px;
+  cursor: pointer;
+  accent-color: #2e58ff;
+}
+
+/* Item text */
+.item-main {
+  font-size: 18px;
+}
+
+.item-title {
+  font-weight: 600;
+  font-size: 20px;
+  margin-bottom: 0.35rem;
+  color: #25304b;
+}
+
+.item-title.done {
+  text-decoration: line-through;
+  color: #9aa0b6;
+}
+
+.item-meta {
+  font-size: 15px;
+  margin-bottom: 0.35rem;
+  color: #5c647a;
+}
+
+.item-notes {
+  font-size: 16px;
+  color: #384057;
+}
+
+/* Actions */
+.item-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+/* RESPONSIVE ---------------------------------------------- */
+
+@media (max-width: 760px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+}
